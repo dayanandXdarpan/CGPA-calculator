@@ -4,25 +4,139 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CGPA Calculator</title>
+    <title>Advanced CGPA Calculator</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <div class="theme-toggle">
+        <button id="themeToggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div>
+
     <div class="container">
-        <h1>CGPA Calculator</h1>
-        <div id="subjects">
-            <div class="subject-input">
-                <input type="text" placeholder="Subject Name" class="subject-name">
-                <input type="text" placeholder="Grade (10, 9, 8, 7, 6, 5, 0 or A+, A, B, C, D, P, F)" class="grade" oninput="calculateCGPA()">
-                <input type="number" placeholder="Credit (1-7)" class="credit" min="1" max="7" oninput="calculateCGPA()">
+        <header class="header">
+            <h1><i class="fas fa-graduation-cap"></i> Advanced CGPA Calculator</h1>
+            <p class="subtitle">Calculate your CGPA with ease and track your academic progress</p>
+        </header>
+
+        <div class="calculator-section">
+            <div class="controls">
+                <div class="grading-system">
+                    <label for="gradingSystem">Grading System:</label>
+                    <select id="gradingSystem" onchange="updateGradingSystem()">
+                        <option value="10point">10 Point Scale</option>
+                        <option value="4point">4.0 Scale</option>
+                        <option value="percentage">Percentage</option>
+                    </select>
+                </div>
+                
+                <div class="semester-info">
+                    <input type="text" id="semesterName" placeholder="Semester/Term Name" class="semester-input">
+                    <button onclick="saveSemester()" class="save-semester-btn" title="Save Current Semester">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="subjects-header">
+                <h3><i class="fas fa-book"></i> Subjects</h3>
+                <div class="subject-actions">
+                    <button onclick="addSubject()" class="add-subject-btn">
+                        <i class="fas fa-plus"></i> Add Subject
+                    </button>
+                    <button onclick="importData()" class="import-btn" title="Import Data">
+                        <i class="fas fa-file-import"></i>
+                    </button>
+                    <button onclick="exportData()" class="export-btn" title="Export Data">
+                        <i class="fas fa-file-export"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="subjects">
+                <div class="subject-input">
+                    <input type="text" placeholder="Subject Name (e.g., Mathematics)" class="subject-name">
+                    <input type="text" placeholder="Grade" class="grade" oninput="calculator.calculateCGPA()">
+                    <input type="number" placeholder="Credits" class="credit" min="0.5" max="10" step="0.5" oninput="calculator.calculateCGPA()">
+                    <button onclick="calculator.removeSubject(this)" class="remove-subject-btn" title="Remove Subject">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button onclick="addSubject()" class="secondary-btn">
+                    <i class="fas fa-plus"></i> Add Another Subject
+                </button>
+                <button onclick="clearAll()" class="danger-btn" onclick="return confirmClear()">
+                    <i class="fas fa-trash-alt"></i> Clear All
+                </button>
             </div>
         </div>
-        <button onclick="addSubject()">Add Another Subject</button>
-        <button onclick="clearAll()">Clear All Data</button>
-        <h2 id="result"></h2>
-        <p id="error" class="error"></p>
+
+        <div class="results-section">
+            <div class="current-result">
+                <h3><i class="fas fa-calculator"></i> Current CGPA</h3>
+                <div id="result" class="result-display"></div>
+                <div id="error" class="error"></div>
+                <div id="stats" class="stats-display"></div>
+            </div>
+
+            <div class="target-calculator">
+                <h3><i class="fas fa-target"></i> Target CGPA Calculator</h3>
+                <div class="target-inputs">
+                    <input type="number" id="targetCGPA" placeholder="Target CGPA" step="0.01" min="0" max="10">
+                    <input type="number" id="remainingCredits" placeholder="Remaining Credits" min="1">
+                    <button onclick="calculateTargetGrades()" class="calculate-target-btn">Calculate Required Grades</button>
+                </div>
+                <div id="targetResult" class="target-result"></div>
+            </div>
+        </div>
+
+        <div class="saved-semesters">
+            <h3><i class="fas fa-history"></i> Saved Semesters</h3>
+            <div id="semestersList" class="semesters-list"></div>
+        </div>
     </div>
-    <footer>&copy; Darpan - All Rights Reserved</footer>
+
+    <footer>
+        <p>&copy; 2024 Darpan - Advanced CGPA Calculator | 
+        <a href="#" onclick="showHelp()">Help</a> | 
+        <a href="#" onclick="showAbout()">About</a></p>
+    </footer>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="fileInput" accept=".json,.csv" style="display: none;" onchange="handleFileImport(event)">
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('helpModal')">&times;</span>
+            <h2><i class="fas fa-question-circle"></i> How to Use</h2>
+            <div class="help-content">
+                <h4>Adding Subjects:</h4>
+                <p>Enter subject name, grade, and credit hours. Grades can be entered as numbers (10-0) or letters (A+, A, B, C, D, P, F).</p>
+                
+                <h4>Grading Systems:</h4>
+                <ul>
+                    <li><strong>10 Point Scale:</strong> 10 (A+) to 0 (F)</li>
+                    <li><strong>4.0 Scale:</strong> 4.0 (A) to 0.0 (F)</li>
+                    <li><strong>Percentage:</strong> 100% to 0%</li>
+                </ul>
+
+                <h4>Target Calculator:</h4>
+                <p>Enter your desired CGPA and remaining credits to see what grades you need to achieve your goal.</p>
+
+                <h4>Data Management:</h4>
+                <p>Save semesters, import/export data, and track your progress over time.</p>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
